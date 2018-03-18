@@ -1,0 +1,35 @@
+sudo: true
+service: docker
+language: ruby
+cache:
+- bundler
+before_install:
+- sudo iptables -L DOCKER || ( echo "DOCKER iptables chain missing" ; sudo iptables
+  -N DOCKER )
+- gem install bundler -v 1.15
+install:
+- bundle install
+rvm:
+- 2.3.0
+- 2.4.1
+notifications:
+  email:
+    recipients:
+    - sensu-plugin@sensu-plugins.io
+    on_success: change
+    on_failure: always
+script:
+- gem build sensu-plugins-salesforce.gemspec
+- gem install sensu-plugins-salesforce-*.gem
+- bundle exec rake quick
+- bundle exec rake kitchen:ruby-`echo $TRAVIS_RUBY_VERSION | sed -e "s/\.//g"`-debian-8
+deploy:
+  provider: rubygems
+  api_key:
+    secure: WVpQFTeaSAB7JZBaq9FoEfoEkJuLaP/esRUXp8va5Rnx9YeeBfHPtY6YWEiWR/p6rIGeCH3QHttX4ihe9mvY/kwheqFY8UiGHgSNgNWWjJiOl1SHa9ihIx1kb6zrEt+o6YZJsQ1mEVBXw+s2A/6GPyazU8dAJ5TWcp3eOobqZLVzwmvPeenwgcYXB2w14GbWZgi5QUxRGnjpkCgJeHnnoqPKdqLOn4N1C9NswymXAzJ1xknZfp78LRX1YbdL+1+foC3gYKDv6RNcaBTQWckTh/QOhsBqN8SarnqxwnA5/NdbOJxTeqsRLSFcRBI5WgSqpc4xp1/hfT5iAqwvep+sZ+7ZsLZyP0fUIcprdFKmM5F9smOTH54LxBU+sSKEog1sIVXywz3vqpm0gyKyqoDkIjFRBixFTgGhrWnsrnEkMq6V4RE0VegbTs0bNBzsSDruOiKAtcLH54PIXRF//T8KljdrjLJw/3+mcwe227bIWSYn2a+X2kACtNZkhE5V6yMfzqVnCsOxEzZS/eK77yt2h8QPGeWWbgldHlLHdrh2dmJbtDxJ6Q6ZVyq5nZqNbP2MDiAlZKpnx1ix20jcbmt9QDuFOUxddpRnWTC0aYqbTHEwyvPBZHgSTMWyQw79Iat2ayxCUXi8mCymxZCwbYUBeentoBzDW/1Lsqm9usXmKaU=
+  gem: sensu-plugins-salesforce
+  on:
+    tags: true
+    all_branches: true
+    rvm: 2.4.1
+    repo: sensu-plugins/sensu-plugins-salesforce
